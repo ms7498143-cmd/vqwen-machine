@@ -94,14 +94,19 @@ var CFG={"base": "https://work-1-gicdmthfnmymivyz.prod-runtime.all-hands.dev", "
 var log=document.getElementById('log'),q=document.getElementById('q'),
     baseEl=document.getElementById('base'),modelEl=document.getElementById('model'),
     stat=document.getElementById('stat'),where=document.getElementById('where');
-try{var ls=JSON.parse(localStorage.getItem('vsite')||'{}');
-  CFG.base=ls.base!==undefined?ls.base:CFG.base;
-  CFG.model=ls.model||CFG.model;}catch(e){}
+var LS=null;try{LS=JSON.parse(localStorage.getItem('vsite')||'null');}catch(e){}
+if(LS){CFG.base=LS.base!==undefined?LS.base:CFG.base;CFG.model=LS.model||CFG.model;}
 baseEl.value=CFG.base||'';modelEl.value=CFG.model||'vqwen';
-function save(){CFG.base=baseEl.value.trim();CFG.model=modelEl.value.trim()||'vqwen';
-  localStorage.setItem('vsite',JSON.stringify({base:CFG.base,model:CFG.model}));
+function refreshBase(){CFG.base=baseEl.value.trim();modelEl.value=modelEl.value.trim()||'vqwen';
   stat.textContent='saved';setTimeout(function(){stat.textContent='';},1200);}
-document.getElementById('save').onclick=save;
+document.getElementById('save').onclick=function(){refreshBase();
+  localStorage.setItem('vsite',JSON.stringify({base:CFG.base,model:modelEl.value.trim()||'vqwen'}));};
+// The API base is kept in base.json next to this page, so the endpoint can be
+// repointed without republishing the HTML. A user-set base (localStorage) wins.
+(function(){ if(LS&&LS.base!==undefined)return;
+  fetch('base.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;})
+   .then(function(j){ if(j&&j.base){CFG.base=j.base;baseEl.value=j.base;
+     stat.textContent='base: '+j.base;} }).catch(function(){}); })();
 function add(role,text){var m=document.createElement('div');m.className='msg '+role;
   var w=document.createElement('div');w.className='who';w.textContent=role==='user'?'you':'machine';
   var b=document.createElement('div');b.className='body';b.textContent=text;
