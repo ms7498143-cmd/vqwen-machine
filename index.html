@@ -23,32 +23,25 @@
     return (window.__VQ_ENDPOINT__||'').replace(/\/$/,'');
   }
   window.__VQ_ENDPOINT_RESOLVED__=null;
+  function base(){
+    if(window.__VQ_ENDPOINT_RESOLVED__===null) window.__VQ_ENDPOINT_RESOLVED__=endpoint();
+    return window.__VQ_ENDPOINT_RESOLVED__;
+  }
+  // 2) Every same-origin /api/* call is really served by the machine. The page
+  //    asks its own github link; we forward to the machine and tell it this
+  //    site's origin, so the base URL it reports back is this github link.
   var of=window.fetch.bind(window);
   window.fetch=function(u,o){
-    var isApi = (typeof u==='string' && u.indexOf('/api/')===0);
     try{
-      if(isApi && !navigator.serviceWorker.controller){
-        if(window.__VQ_ENDPOINT_RESOLVED__===null) window.__VQ_ENDPOINT_RESOLVED__=endpoint();
-        var B=window.__VQ_ENDPOINT_RESOLVED__;
+      if(typeof u==='string' && u.indexOf('/api/')===0){
+        var B=base();
         if(B){
           u=B+u+(u.indexOf('?')>=0?'&':'?')+'vq_site='+encodeURIComponent(SITE);
           o=Object.assign({},o||{}); o.credentials='include';
         }
       }
     }catch(e){}
-    var p=of(u,o);
-    // The page shows its base URL from /api/keys; make it the github link so
-    // no Cloudflare/Serveo host is ever displayed.
-    try{
-      if(typeof u==='string' && u.indexOf('/api/keys')!==-1){
-        return p.then(function(r){ return r.json().then(function(j){
-          if(j&&j.api){ j.api.base_url=SITE; }
-          return new Response(JSON.stringify(j),
-            {status:r.status, headers:{'content-type':'application/json'}});
-        }).catch(function(){ return r; }); });
-      }
-    }catch(e){}
-    return p;
+    return of(u,o);
   };
 })();
 
