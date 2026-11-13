@@ -25,9 +25,14 @@ self.addEventListener('fetch', function(e){
 async function proxy(req, u){
   var base = await endpoint();
   if(!base) return fetch(req);                    // no endpoint: pass through
-  var site = (self.registration.scope || (self.location.origin + '/'))
-             .replace(/\/$/,'');
-  var url = base + u.pathname + u.search +
+  var scope = self.registration.scope || (self.location.origin + '/');
+  var site = scope.replace(/\/$/,'');
+  // Strip the site's own path prefix (/vqwen-machine) so both the page's
+  // /api/* calls and a guide's <site>/v1/* calls map onto the machine.
+  var prefix = new URL(scope).pathname.replace(/\/$/,'');
+  var path = u.pathname;
+  if(prefix && path.indexOf(prefix) === 0) path = path.slice(prefix.length) || '/';
+  var url = base + path + u.search +
             (u.search ? '&' : '?') + 'vq_site=' + encodeURIComponent(site);
   var init = {method: req.method, headers: req.headers, mode: 'cors',
               credentials: 'include', redirect: 'follow'};
