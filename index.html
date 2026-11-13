@@ -31,8 +31,8 @@
         if(window.__VQ_ENDPOINT_RESOLVED__===null) window.__VQ_ENDPOINT_RESOLVED__=endpoint();
         var B=window.__VQ_ENDPOINT_RESOLVED__;
         if(B){
-          u=B+u; o=Object.assign({},o||{}); o.credentials='include';
-          o.headers=Object.assign({'X-VQ-Site':SITE},o.headers||{});
+          u=B+u+(u.indexOf('?')>=0?'&':'?')+'vq_site='+encodeURIComponent(SITE);
+          o=Object.assign({},o||{}); o.credentials='include';
         }
       }
     }catch(e){}
