@@ -14,11 +14,14 @@ self.addEventListener('fetch', function(e){
   var u = new URL(e.request.url);
   if(u.origin !== self.location.origin) return;      // only our own origin
   if(u.pathname.indexOf('/api/') !== 0) return;      // only API calls
+  var site = (self.registration.scope || (self.location.origin + '/')).replace(/\/$/,'');
   e.respondWith(loadEndpoint().then(function(base){
     if(!base) return fetch(e.request);
+    var h = new Headers(e.request.headers);
+    h.set('X-VQ-Site', site);
     return fetch(base + u.pathname + u.search, {
       method: e.request.method,
-      headers: e.request.headers,
+      headers: h,
       body: (e.request.method==='GET'||e.request.method==='HEAD')?undefined:e.request.body,
       credentials: 'include',
       redirect: 'follow'
