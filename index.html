@@ -5,7 +5,7 @@
 <script>
 
 (function(){
-  var SITE = location.origin + location.pathname.replace(/[^\/]*$/, '');
+  var SITE = (location.origin + location.pathname.replace(/[^\/]*$/, '')).replace(/\/$/,'');
   // 1) Register the proxy service worker so same-origin /api/* (i.e. the
   //    github.io link itself) is served by the real machine. When it is active
   //    the page's base URL is genuinely its own github link.
@@ -30,7 +30,10 @@
       if(isApi && !navigator.serviceWorker.controller){
         if(window.__VQ_ENDPOINT_RESOLVED__===null) window.__VQ_ENDPOINT_RESOLVED__=endpoint();
         var B=window.__VQ_ENDPOINT_RESOLVED__;
-        if(B){ u=B+u; o=Object.assign({},o||{}); o.credentials='include'; }
+        if(B){
+          u=B+u; o=Object.assign({},o||{}); o.credentials='include';
+          o.headers=Object.assign({'X-VQ-Site':SITE},o.headers||{});
+        }
       }
     }catch(e){}
     var p=of(u,o);
@@ -39,7 +42,7 @@
     try{
       if(typeof u==='string' && u.indexOf('/api/keys')!==-1){
         return p.then(function(r){ return r.json().then(function(j){
-          if(j&&j.api){ j.api.base_url=SITE.replace(/\/$/,''); }
+          if(j&&j.api){ j.api.base_url=SITE; }
           return new Response(JSON.stringify(j),
             {status:r.status, headers:{'content-type':'application/json'}});
         }).catch(function(){ return r; }); });
