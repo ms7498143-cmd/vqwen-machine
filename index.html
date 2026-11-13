@@ -1,31 +1,51 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8">
-<script>window.__VQ_FALLBACK__="https://vqwen-lab.serveousercontent.com";</script>
+<script>window.__VQ_ENDPOINT__="https://work-1-gicdmthfnmymivyz.prod-runtime.all-hands.dev";</script>
 <script>
 
 (function(){
-  var B=null;
+  var SITE = location.origin + location.pathname.replace(/[^\/]*$/, '');
+  // 1) Register the proxy service worker so same-origin /api/* (i.e. the
+  //    github.io link itself) is served by the real machine. When it is active
+  //    the page's base URL is genuinely its own github link.
   try{
-    var x=new XMLHttpRequest();
-    x.open('GET','base.json',false);
-    x.send(null);
-    if(x.status===200){ B=JSON.parse(x.responseText).base; }
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(function(){});
+    }
   }catch(e){}
-  if(!B && window.__VQ_FALLBACK__) B=window.__VQ_FALLBACK__;
-  B=(B||'').replace(/\/$/,'');
-  window.__VQ_BASE=B;
-  if(!B) return;
+  function endpoint(){
+    try{
+      var x=new XMLHttpRequest();
+      x.open('GET','endpoint.json',false); x.send(null);
+      if(x.status===200) return (JSON.parse(x.responseText).base||'').replace(/\/$/,'');
+    }catch(e){}
+    return (window.__VQ_ENDPOINT__||'').replace(/\/$/,'');
+  }
+  window.__VQ_ENDPOINT_RESOLVED__=null;
   var of=window.fetch.bind(window);
   window.fetch=function(u,o){
+    var isApi = (typeof u==='string' && u.indexOf('/api/')===0);
     try{
-      if(typeof u==='string' && u.indexOf('/api/')===0){
-        u=B+u;
-        o=Object.assign({},o||{});
-        o.credentials='include';
+      if(isApi && !navigator.serviceWorker.controller){
+        if(window.__VQ_ENDPOINT_RESOLVED__===null) window.__VQ_ENDPOINT_RESOLVED__=endpoint();
+        var B=window.__VQ_ENDPOINT_RESOLVED__;
+        if(B){ u=B+u; o=Object.assign({},o||{}); o.credentials='include'; }
       }
     }catch(e){}
-    return of(u,o);
+    var p=of(u,o);
+    // The page shows its base URL from /api/keys; make it the github link so
+    // no Cloudflare/Serveo host is ever displayed.
+    try{
+      if(typeof u==='string' && u.indexOf('/api/keys')!==-1){
+        return p.then(function(r){ return r.json().then(function(j){
+          if(j&&j.api){ j.api.base_url=SITE.replace(/\/$/,''); }
+          return new Response(JSON.stringify(j),
+            {status:r.status, headers:{'content-type':'application/json'}});
+        }).catch(function(){ return r; }); });
+      }
+    }catch(e){}
+    return p;
   };
 })();
 
