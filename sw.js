@@ -19,12 +19,10 @@ self.addEventListener('fetch', function(e){
     if(!base) return fetch(e.request);
     var h = new Headers(e.request.headers);
     h.set('X-VQ-Site', site);
-    return fetch(base + u.pathname + u.search, {
-      method: e.request.method,
-      headers: h,
-      body: (e.request.method==='GET'||e.request.method==='HEAD')?undefined:e.request.body,
-      credentials: 'include',
-      redirect: 'follow'
-    });
+    var hasBody = e.request.method !== 'GET' && e.request.method !== 'HEAD';
+    var init = {method: e.request.method, headers: h, credentials: 'include',
+                redirect: 'follow'};
+    if(hasBody){ init.body = e.request.body; init.duplex = 'half'; }
+    return fetch(new Request(base + u.pathname + u.search, init));
   }));
 });
