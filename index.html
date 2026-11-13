@@ -27,13 +27,15 @@
     if(window.__VQ_ENDPOINT_RESOLVED__===null) window.__VQ_ENDPOINT_RESOLVED__=endpoint();
     return window.__VQ_ENDPOINT_RESOLVED__;
   }
-  // 2) Every same-origin /api/* call is really served by the machine. The page
-  //    asks its own github link; we forward to the machine and tell it this
-  //    site's origin, so the base URL it reports back is this github link.
+  // 2) Once the service worker controls the page it forwards same-origin
+  //    /api/* and /v1/* to the machine, so the page's base URL really is its
+  //    own github link. Before that (first visit), this shim does the same
+  //    forwarding inline so the page works on the very first load too.
   var of=window.fetch.bind(window);
   window.fetch=function(u,o){
     try{
-      if(typeof u==='string' && u.indexOf('/api/')===0){
+      var controlled = ('serviceWorker' in navigator) && navigator.serviceWorker.controller;
+      if(!controlled && typeof u==='string' && (u.indexOf('/api/')===0 || u.indexOf('/v1/')===0)){
         var B=base();
         if(B){
           u=B+u+(u.indexOf('?')>=0?'&':'?')+'vq_site='+encodeURIComponent(SITE);
