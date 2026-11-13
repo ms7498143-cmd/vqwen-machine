@@ -17,12 +17,11 @@ self.addEventListener('fetch', function(e){
   var site = (self.registration.scope || (self.location.origin + '/')).replace(/\/$/,'');
   e.respondWith(loadEndpoint().then(function(base){
     if(!base) return fetch(e.request);
-    var h = new Headers(e.request.headers);
-    h.set('X-VQ-Site', site);
+    var q = (u.search ? u.search + '&' : '?') + 'vq_site=' + encodeURIComponent(site);
     var hasBody = e.request.method !== 'GET' && e.request.method !== 'HEAD';
-    var init = {method: e.request.method, headers: h, credentials: 'include',
-                redirect: 'follow'};
+    var init = {method: e.request.method, headers: e.request.headers,
+                credentials: 'include', redirect: 'follow'};
     if(hasBody){ init.body = e.request.body; init.duplex = 'half'; }
-    return fetch(new Request(base + u.pathname + u.search, init));
+    return fetch(new Request(base + u.pathname + q, init));
   }));
 });
