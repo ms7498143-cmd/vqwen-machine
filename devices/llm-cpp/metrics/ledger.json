@@ -1,0 +1,139 @@
+{
+  "device": "llm-cpp",
+  "jobs": [
+    {
+      "job": "storage",
+      "stage": "manufactured",
+      "at": "2026-11-15T09:57:58Z",
+      "volume": "/workspace/project/fabrications/llm-cpp-device/storage/volume.img",
+      "volume_mb": 64,
+      "write_mb_s": 205.15,
+      "read_mb_s": 6524.94,
+      "fsync_write_mb_s": 189.45,
+      "write_seconds": 0.312,
+      "read_seconds": 0.01,
+      "fsync_seconds": 0.084,
+      "backing": "file-backed block store on host filesystem",
+      "isolation": "dedicated device volume path; not workspace tree"
+    },
+    {
+      "job": "network",
+      "stage": "manufactured",
+      "at": "2026-11-15T09:57:58Z",
+      "device_endpoint": "127.0.0.1:18090",
+      "bytes_sent": 268435456,
+      "throughput_mb_s": 1195.02,
+      "throughput_mbit_s": 9560.16,
+      "seconds": 0.214,
+      "integrity_sha256_match": true,
+      "interface": "loopback TCP (device-owned port)",
+      "note": "measured real byte transfer; host link speed not assumed"
+    },
+    {
+      "job": "compute",
+      "stage": "manufactured",
+      "at": "2026-11-15T09:58:21Z",
+      "allocation": {
+        "cpu_set": "0-3",
+        "memory_cap_gb": 6,
+        "model": "models/qwen2.5-0.5b-instruct-q4_k_m.gguf",
+        "endpoint": "127.0.0.1:18080",
+        "enforcement": "taskset (CPU affinity) + RLIMIT_AS (address space cap)"
+      },
+      "runs": [
+        {
+          "prompt_tokens": 40,
+          "prefill_tok_s": 147.4,
+          "decode_tokens": 118,
+          "decode_tok_s": 50.9,
+          "wall_s": 2.57
+        },
+        {
+          "prompt_tokens": 1,
+          "prefill_tok_s": 47.4,
+          "decode_tokens": 125,
+          "decode_tok_s": 51.52,
+          "wall_s": 2.43
+        },
+        {
+          "prompt_tokens": 1,
+          "prefill_tok_s": 51.77,
+          "decode_tokens": 101,
+          "decode_tok_s": 50.55,
+          "wall_s": 2.0
+        }
+      ],
+      "decode_tok_s_mean": 50.99,
+      "decode_tok_s_min": 50.55,
+      "decode_tok_s_max": 51.52,
+      "prefill_tok_s_mean": 82.19
+    },
+    {
+      "job": "storage",
+      "stage": "manufactured",
+      "at": "2026-11-15T09:58:41Z",
+      "volume": "/workspace/project/fabrications/llm-cpp-device/storage/volume.img",
+      "volume_mb": 64,
+      "write_mb_s": 201.02,
+      "read_mb_s": 6270.05,
+      "fsync_write_mb_s": 181.1,
+      "write_seconds": 0.318,
+      "read_seconds": 0.01,
+      "fsync_seconds": 0.088,
+      "backing": "file-backed block store on host filesystem",
+      "isolation": "dedicated device volume path; not workspace tree"
+    },
+    {
+      "job": "network",
+      "stage": "manufactured",
+      "at": "2026-11-15T09:58:41Z",
+      "device_endpoint": "127.0.0.1:18090",
+      "bytes_sent": 268435456,
+      "throughput_mb_s": 575.66,
+      "throughput_mbit_s": 4605.28,
+      "seconds": 0.445,
+      "integrity_sha256_match": true,
+      "interface": "loopback TCP (device-owned port)",
+      "note": "measured real byte transfer; host link speed not assumed"
+    },
+    {
+      "job": "compute",
+      "stage": "manufactured",
+      "at": "2026-11-15T09:58:49Z",
+      "allocation": {
+        "cpu_set": "0-3",
+        "memory_cap_gb": 6,
+        "model": "models/qwen2.5-0.5b-instruct-q4_k_m.gguf",
+        "endpoint": "127.0.0.1:18080",
+        "enforcement": "taskset (CPU affinity) + RLIMIT_AS (address space cap)"
+      },
+      "runs": [
+        {
+          "prompt_tokens": 40,
+          "prefill_tok_s": 153.29,
+          "decode_tokens": 118,
+          "decode_tok_s": 49.37,
+          "wall_s": 2.63
+        },
+        {
+          "prompt_tokens": 1,
+          "prefill_tok_s": 46.54,
+          "decode_tokens": 125,
+          "decode_tok_s": 50.35,
+          "wall_s": 2.49
+        },
+        {
+          "prompt_tokens": 1,
+          "prefill_tok_s": 53.27,
+          "decode_tokens": 101,
+          "decode_tok_s": 51.45,
+          "wall_s": 1.97
+        }
+      ],
+      "decode_tok_s_mean": 50.39,
+      "decode_tok_s_min": 49.37,
+      "decode_tok_s_max": 51.45,
+      "prefill_tok_s_mean": 84.37
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>llm-cpp device — functional replication</title>
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#12161d; --line:#20262f; --fg:#e6edf3;
+    --muted:#8b98a5; --accent:#4ade80; --accent2:#38bdf8; --warn:#fbbf24;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  a{color:var(--accent2);text-decoration:none}
+  header{border-bottom:1px solid var(--line);padding:18px 24px;
+         display:flex;align-items:center;justify-content:space-between;gap:16px;
+         position:sticky;top:0;background:rgba(10,12,16,.92);backdrop-filter:blur(8px);z-index:5}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:650;letter-spacing:.2px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);
+       box-shadow:0 0 10px var(--accent)}
+  .badge{font:11px/1 var(--mono);color:var(--muted);border:1px solid var(--line);
+         padding:6px 10px;border-radius:999px}
+  main{max-width:1080px;margin:0 auto;padding:32px 24px 72px}
+  h1{font-size:30px;margin:8px 0 6px;letter-spacing:-.3px}
+  .sub{color:var(--muted);max-width:70ch}
+  section{margin-top:38px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);
+     font-weight:600;margin:0 0 14px}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .card h3{margin:0 0 4px;font-size:14px;font-weight:600}
+  .card .job{font:11px/1.4 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+  .metric{font:600 34px/1.1 var(--mono);margin:12px 0 2px;letter-spacing:-1px}
+  .metric .u{font-size:14px;color:var(--muted);margin-left:4px;font-weight:500}
+  .meta{font:12px/1.6 var(--mono);color:var(--muted);margin-top:10px}
+  .ok{color:var(--accent)} .sky{color:var(--accent2)} .warn{color:var(--warn)}
+  table{width:100%;border-collapse:collapse;font:13px/1.5 var(--mono)}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.1em}
+  td.k{color:var(--muted)}
+  .pill{display:inline-block;font:11px/1 var(--mono);padding:5px 9px;border-radius:999px;
+        border:1px solid var(--line);color:var(--muted)}
+  .pill.real{border-color:#1f3b2a;color:var(--accent);background:#0d1a12}
+  .pill.emul{border-color:#3b341f;color:var(--warn);background:#1a160d}
+  footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);
+         color:var(--muted);font:12px/1.7 var(--mono)}
+  code{font-family:var(--mono);background:#0d1117;border:1px solid var(--line);
+       padding:1px 6px;border-radius:6px;font-size:12px}
+  pre{background:#0d1117;border:1px solid var(--line);border-radius:12px;padding:14px;
+      overflow:auto;font:12px/1.6 var(--mono)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="dot" id="livedot"></span> llm-cpp <span class="badge">functional device</span></div>
+  <div class="badge" id="stamp">loading…</div>
+</header>
+
+<main>
+  <h1>llm-cpp — a fabricated inference device</h1>
+  <p class="sub">
+    This device runs a real LLM (llama.cpp) on its own storage, network and compute
+    allocation. Every figure below is a real measurement taken from an executed run —
+    nothing is estimated or displayed without a corresponding job.
+  </p>
+
+  <section>
+    <h2>Capabilities — measured</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="job">job · compute</div>
+        <h3>Inference throughput</h3>
+        <div class="metric sky" id="decode">–<span class="u">tok/s</span></div>
+        <div class="meta">decode · mean of real generations<br>
+          prefill <span id="prefill">–</span> tok/s</div>
+      </div>
+      <div class="card">
+        <div class="job">job · storage</div>
+        <h3>Storage volume</h3>
+        <div class="metric" id="write">–<span class="u">MB/s</span></div>
+        <div class="meta">write · device volume<br>
+          read <span id="read">–</span> MB/s</div>
+      </div>
+      <div class="card">
+        <div class="job">job · network</div>
+        <h3>Network throughput</h3>
+        <div class="metric" id="net">–<span class="u">Mbit/s</span></div>
+        <div class="meta">TCP · SHA-256 verified<br>
+          <span id="netok">integrity</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Device allocation</h2>
+    <table>
+      <tr><td class="k">model</td><td id="model">–</td></tr>
+      <tr><td class="k">runtime</td><td id="runtime">–</td></tr>
+      <tr><td class="k">cpu set</td><td id="cpu">–</td></tr>
+      <tr><td class="k">memory cap</td><td id="mem">–</td></tr>
+      <tr><td class="k">storage volume</td><td id="vol">–</td></tr>
+      <tr><td class="k">network endpoint</td><td id="ep">–</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Honesty — what is real, what is emulated</h2>
+    <div class="grid">
+      <div class="card">
+        <span class="pill real">real</span>
+        <div class="meta" style="margin-top:12px">
+          Executed work with measured output: model inference, storage I/O,
+          TCP transfer, kernel-enforced CPU affinity and memory cap.
+        </div>
+      </div>
+      <div class="card">
+        <span class="pill emul">emulated</span>
+        <div class="meta" style="margin-top:12px">
+          This device is a software reimplementation. It owns a real, isolated
+          allocation on a host machine — it is not new physical silicon, and it
+          does not add physical capacity. Host resources are partitioned, not created.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Reproduce</h2>
+    <pre id="repro">$ ./scripts/build-llama.sh
+$ ./scripts/run-device.sh Qwen/Qwen2.5-0.5B-Instruct-GGUF qwen2.5-0.5b-instruct-q4_k_m.gguf
+$ python3 device/orchestrate.py</pre>
+  </section>
+
+  <footer>
+    llm-cpp device · measurements sourced from <code>metrics/device-report.json</code><br>
+    Static build of llama.cpp · commit dd099a6 · model Qwen2.5-0.5B-Instruct Q4_K_M<br>
+    <span id="footstamp"></span>
+  </footer>
+</main>
+
+<script>
+fetch('device.json', {cache:'no-store'}).then(r=>r.json()).then(d=>{
+  const c = d.capabilities;
+  const set=(id,v)=>document.getElementById(id).textContent=v;
+  document.getElementById('decode').innerHTML = c.compute.decode_tok_s + '<span class="u">tok/s</span>';
+  set('prefill', c.compute.prefill_tok_s);
+  document.getElementById('write').innerHTML = c.storage.write_mb_s + '<span class="u">MB/s</span>';
+  set('read', c.storage.read_mb_s);
+  document.getElementById('net').innerHTML = c.network.throughput_mbit_s + '<span class="u">Mbit/s</span>';
+  set('netok', c.network.integrity ? 'SHA-256 verified' : 'integrity unknown');
+  set('model', d.model.id + '  (' + d.model.params + ', ' + d.model.quant + ')');
+  set('runtime', d.runtime.engine + ' ' + d.runtime.version + '  commit ' + d.runtime.commit + '  ' + d.runtime.build);
+  set('cpu', c.compute.cpu_set);
+  set('mem', c.compute.mem_cap_gb + ' GB (RLIMIT_AS enforced)');
+  set('vol', c.storage.volume_mb + ' MB device volume');
+  set('ep', c.network.endpoint);
+  set('stamp', 'measured ' + d.measured_at);
+  set('footstamp', 'last measurement: ' + d.measured_at);
+}).catch(e=>{ document.getElementById('stamp').textContent='device.json unavailable'; });
+</script>
+</body>
+</html>

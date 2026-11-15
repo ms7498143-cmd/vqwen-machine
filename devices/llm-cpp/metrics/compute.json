@@ -1,0 +1,36 @@
+{
+  "allocation": {
+    "cpu_set": "0-3",
+    "memory_cap_gb": 6,
+    "model": "models/qwen2.5-0.5b-instruct-q4_k_m.gguf",
+    "endpoint": "127.0.0.1:18080",
+    "enforcement": "taskset (CPU affinity) + RLIMIT_AS (address space cap)"
+  },
+  "runs": [
+    {
+      "prompt_tokens": 40,
+      "prefill_tok_s": 153.29,
+      "decode_tokens": 118,
+      "decode_tok_s": 49.37,
+      "wall_s": 2.63
+    },
+    {
+      "prompt_tokens": 1,
+      "prefill_tok_s": 46.54,
+      "decode_tokens": 125,
+      "decode_tok_s": 50.35,
+      "wall_s": 2.49
+    },
+    {
+      "prompt_tokens": 1,
+      "prefill_tok_s": 53.27,
+      "decode_tokens": 101,
+      "decode_tok_s": 51.45,
+      "wall_s": 1.97
+    }
+  ],
+  "decode_tok_s_mean": 50.39,
+  "decode_tok_s_min": 49.37,
+  "decode_tok_s_max": 51.45,
+  "prefill_tok_s_mean": 84.37
+}

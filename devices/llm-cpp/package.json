@@ -1,0 +1,11 @@
+{
+  "name": "llm-cpp-device",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fabricated LLM inference device: real llama.cpp runtime on its own storage, network and compute allocation.",
+  "scripts": {
+    "build:runtime": "bash scripts/build-llama.sh",
+    "device": "python3 device/orchestrate.py",
+    "web:data": "python3 scripts/make-web-data.py"
+  }
+}

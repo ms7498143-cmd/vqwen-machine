@@ -1,0 +1,10 @@
+{
+  "device_endpoint": "127.0.0.1:18090",
+  "bytes_sent": 268435456,
+  "throughput_mb_s": 575.66,
+  "throughput_mbit_s": 4605.28,
+  "seconds": 0.445,
+  "integrity_sha256_match": true,
+  "interface": "loopback TCP (device-owned port)",
+  "note": "measured real byte transfer; host link speed not assumed"
+}

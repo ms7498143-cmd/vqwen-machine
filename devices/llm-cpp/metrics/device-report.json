@@ -1,0 +1,64 @@
+{
+  "device": "llm-cpp",
+  "runtime": "llama.cpp (static build)",
+  "capabilities": {
+    "storage": {
+      "volume": "/workspace/project/fabrications/llm-cpp-device/storage/volume.img",
+      "volume_mb": 64,
+      "write_mb_s": 201.02,
+      "read_mb_s": 6270.05,
+      "fsync_write_mb_s": 181.1,
+      "write_seconds": 0.318,
+      "read_seconds": 0.01,
+      "fsync_seconds": 0.088,
+      "backing": "file-backed block store on host filesystem",
+      "isolation": "dedicated device volume path; not workspace tree"
+    },
+    "network": {
+      "device_endpoint": "127.0.0.1:18090",
+      "bytes_sent": 268435456,
+      "throughput_mb_s": 575.66,
+      "throughput_mbit_s": 4605.28,
+      "seconds": 0.445,
+      "integrity_sha256_match": true,
+      "interface": "loopback TCP (device-owned port)",
+      "note": "measured real byte transfer; host link speed not assumed"
+    },
+    "compute": {
+      "allocation": {
+        "cpu_set": "0-3",
+        "memory_cap_gb": 6,
+        "model": "models/qwen2.5-0.5b-instruct-q4_k_m.gguf",
+        "endpoint": "127.0.0.1:18080",
+        "enforcement": "taskset (CPU affinity) + RLIMIT_AS (address space cap)"
+      },
+      "runs": [
+        {
+          "prompt_tokens": 40,
+          "prefill_tok_s": 153.29,
+          "decode_tokens": 118,
+          "decode_tok_s": 49.37,
+          "wall_s": 2.63
+        },
+        {
+          "prompt_tokens": 1,
+          "prefill_tok_s": 46.54,
+          "decode_tokens": 125,
+          "decode_tok_s": 50.35,
+          "wall_s": 2.49
+        },
+        {
+          "prompt_tokens": 1,
+          "prefill_tok_s": 53.27,
+          "decode_tokens": 101,
+          "decode_tok_s": 51.45,
+          "wall_s": 1.97
+        }
+      ],
+      "decode_tok_s_mean": 50.39,
+      "decode_tok_s_min": 49.37,
+      "decode_tok_s_max": 51.45,
+      "prefill_tok_s_mean": 84.37
+    }
+  }
+}

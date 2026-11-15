@@ -1,0 +1,7 @@
+bin/
+models/
+storage/
+metrics/
+device/
+scripts/
+*.log

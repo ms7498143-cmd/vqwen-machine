@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": null,
+  "outputDirectory": "web",
+  "cleanUrls": true,
+  "headers": [
+    {
+      "source": "/device.json",
+      "headers": [{"key": "Cache-Control", "value": "no-store"}]
+    }
+  ]
+}

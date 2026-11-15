@@ -1,0 +1,12 @@
+{
+  "volume": "/workspace/project/fabrications/llm-cpp-device/storage/volume.img",
+  "volume_mb": 64,
+  "write_mb_s": 201.02,
+  "read_mb_s": 6270.05,
+  "fsync_write_mb_s": 181.1,
+  "write_seconds": 0.318,
+  "read_seconds": 0.01,
+  "fsync_seconds": 0.088,
+  "backing": "file-backed block store on host filesystem",
+  "isolation": "dedicated device volume path; not workspace tree"
+}

@@ -1,0 +1,38 @@
+{
+  "device": "llm-cpp",
+  "generated_from": "metrics/*.json (real measurements)",
+  "model": {
+    "id": "Qwen/Qwen2.5-0.5B-Instruct-GGUF",
+    "file": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
+    "params": "0.49B",
+    "quant": "Q4_K_M",
+    "size_mb": 469
+  },
+  "runtime": {
+    "engine": "llama.cpp",
+    "commit": "dd099a6",
+    "build": "static (no glibc dependency)",
+    "version": "1.0.0-dev"
+  },
+  "capabilities": {
+    "storage": {
+      "write_mb_s": 201.02,
+      "read_mb_s": 6270.05,
+      "fsync_mb_s": 181.1,
+      "volume_mb": 64
+    },
+    "network": {
+      "throughput_mb_s": 575.66,
+      "throughput_mbit_s": 4605.28,
+      "integrity": true,
+      "endpoint": "127.0.0.1:18090"
+    },
+    "compute": {
+      "decode_tok_s": 50.39,
+      "prefill_tok_s": 84.37,
+      "cpu_set": "0-3",
+      "mem_cap_gb": 6
+    }
+  },
+  "measured_at": "2026-11-15T09:59:19Z"
+}
