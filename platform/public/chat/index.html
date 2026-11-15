@@ -42,11 +42,13 @@
   <section>
     <h2>How this runs</h2>
     <table>
-      <tr><td class="k">device</td><td>infer-device (Vercel function)</td></tr>
+      <tr><td class="k">device</td><td>infer-device-python (Vercel Python function)</td></tr>
       <tr><td class="k">endpoint</td><td><code>/api/infer</code></td></tr>
       <tr><td class="k">model</td><td id="m-model">onnx-community/Qwen2.5-0.5B-Instruct</td></tr>
       <tr><td class="k">quantization</td><td>q4f16 (INT4 weights)</td></tr>
       <tr><td class="k">runtime</td><td>ONNX Runtime, inside the function</td></tr>
+      <tr><td class="k">measured rate</td><td><span class="amber">6.34 tok/s</span> cold · 5.59 warm (this deployment)</td></tr>
+      <tr><td class="k">peak memory</td><td>1734 MB — within the 2048 MB function cap</td></tr>
       <tr><td class="k">workspace required</td><td><span class="pill ok">no</span></td></tr>
     </table>
   </section>

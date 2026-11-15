@@ -2,12 +2,24 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "outputDirectory": "public",
   "functions": {
-    "api/**/*.js": {"memory": 2048, "maxDuration": 300}
+    "api/infer.py": {
+      "memory": 2048,
+      "maxDuration": 300
+    },
+    "api/*.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
   },
   "headers": [
     {
       "source": "/api/(.*)",
-      "headers": [{"key": "Cache-Control", "value": "no-store"}]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
     }
   ]
 }

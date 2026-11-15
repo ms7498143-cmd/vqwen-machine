@@ -14,8 +14,8 @@ module.exports = function handler(req, res) {
         description: 'Runs real measurement jobs on Vercel servers.' },
       { id: 'fleet-runner', endpoint: '/api/fleet?devices=8', jobs: ['parallel-compute'],
         description: 'Runs many device jobs in parallel and reports aggregate throughput.' },
-      { id: 'infer-device', endpoint: '/api/infer?prompt=hello', jobs: ['text-generation'],
-        description: 'Runs the registered model inside the device via ONNX Runtime.' },
+      { id: 'infer-device-python', endpoint: '/api/infer?prompt=hello', jobs: ['text-generation'],
+        description: 'Runs the registered model inside a Vercel Python function via ONNX Runtime (peak 1734 MB).' },
     ],
     models: models.models.map((m) => ({
       id: m.id, source: m.source, params: m.params,
@@ -26,6 +26,7 @@ module.exports = function handler(req, res) {
       device: '/api/device?job=all',
       fleet: '/api/fleet?devices=8',
       infer: '/api/infer?prompt=hello',
+      infer_node: '/api/infer-node?prompt=hello',
       models: '/models.json',
     },
     server_time: new Date().toISOString(),

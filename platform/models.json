@@ -12,17 +12,24 @@
       "runtimes": [
         {
           "runtime": "python-onnxruntime",
-          "device": "python-device",
+          "device": "python-device (local)",
           "measured_tokens_per_sec": 21.46,
-          "measured_load_s": 2.81,
-          "note": "Autoregressive loop with KV cache, INT4 weights, measured on the device."
+          "peak_rss_mb": 1734,
+          "note": "Autoregressive loop with KV cache. INT4 weights, memory arena disabled."
+        },
+        {
+          "runtime": "python-onnxruntime",
+          "device": "vercel-infer-device-python",
+          "measured_tokens_per_sec": 6.34,
+          "measured_warm_tokens_per_sec": 5.59,
+          "note": "Runs inside a Vercel Python function. Lower than local because the function has a slower, shared CPU core."
         },
         {
           "runtime": "transformers.js (node)",
-          "device": "vercel-infer-device",
+          "device": "vercel-infer-device-node",
           "measured_tokens_per_sec": 4.38,
-          "measured_load_s": 8.6,
-          "note": "Same model inside a Vercel function; slower CPU per core."
+          "peak_rss_mb": 2640,
+          "note": "Same model in a Vercel Node function. Exceeds the Hobby 2048 MB cap, so the Python path is used instead."
         }
       ]
     }
