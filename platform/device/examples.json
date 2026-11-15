@@ -1,0 +1,60 @@
+{
+  "sum_1_to_100": {
+    "asm": [
+      "xor %rax, %rax",
+      "mov $100, %rcx",
+      "L1:",
+      "add %rcx, %rax",
+      "dec %rcx",
+      "jnz L1"
+    ],
+    "code_hex": "4831c048c7c1640000004801c848ffc975f8c3",
+    "bytes": 19
+  },
+  "factorial_10": {
+    "asm": [
+      "mov $1, %rax",
+      "mov $10, %rcx",
+      "L1:",
+      "imul %rcx, %rax",
+      "dec %rcx",
+      "jnz L1"
+    ],
+    "code_hex": "48c7c00100000048c7c10a000000480fafc148ffc975f7c3",
+    "bytes": 24
+  },
+  "add_5_37": {
+    "asm": [
+      "mov $5, %rax",
+      "add $37, %rax"
+    ],
+    "code_hex": "48c7c0050000004883c025c3",
+    "bytes": 12
+  },
+  "shift_rotate": {
+    "asm": [
+      "mov $1, %rax",
+      "mov $8, %rcx",
+      "L1:",
+      "rol $1, %rax",
+      "dec %rcx",
+      "jnz L1"
+    ],
+    "code_hex": "48c7c00100000048c7c10800000048d1c048ffc975f8c3",
+    "bytes": 23
+  },
+  "bit_count": {
+    "asm": [
+      "xor %rax, %rax",
+      "mov $255, %rcx",
+      "L1:",
+      "mov %rcx, %rdx",
+      "and $1, %rdx",
+      "add %rdx, %rax",
+      "shr $1, %rcx",
+      "jnz L1"
+    ],
+    "code_hex": "4831c048c7c1ff0000004889ca4883e2014801d048d1e975f1c3",
+    "bytes": 26
+  }
+}

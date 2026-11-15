@@ -11,6 +11,7 @@
   <a class="logo" href="/"><span class="mark">vq</span> vqwen platform</a>
   <a class="tab" href="/">Home</a>
   <a class="tab active" href="/chat/">Chat</a>
+  <a class="tab" href="/cpu/">CPU clone</a>
   <a class="tab" href="/docs/">Docs</a>
   <span class="spacer"></span>
   <span class="status"><span class="pulse"></span><span id="nav-status">connecting…</span></span>
@@ -61,7 +62,7 @@
 <script>
 var $=function(i){return document.getElementById(i)};
 var log=$('chatlog'), form=$('chat-form'), input=$('chat-input'),
-    send=$('chat-send'), status=$('chat-status');
+    btnSend=$('chat-send'), status=$('chat-status');
 
 fetch('/api/status',{cache:'no-store'}).then(function(r){return r.json()}).then(function(s){
   var el=$('nav-status'); if(el) el.textContent='live · '+(s.region||'vercel');
@@ -77,32 +78,70 @@ function add(who, text, cls){
   return d;
 }
 
-form.addEventListener('submit',function(ev){
-  ev.preventDefault();
-  var text=input.value.trim(); if(!text) return;
+function runChat(prompt){
+  var text=(prompt||'').trim(); if(!text) return;
   add('you', text, 'user');
-  input.value=''; send.disabled=true;
-  var bot=add('device','generating…','bot');
-  var t0=performance.now();
+  input.value=''; btnSend.disabled=true;
+
+  var d=document.createElement('div'); d.className='msg bot';
+  var w=document.createElement('span'); w.className='who'; w.textContent='device';
+  var body=document.createElement('span');
+  var caret=document.createElement('span'); caret.className='caret';
+  d.appendChild(w); d.appendChild(body); d.appendChild(caret);
+  log.appendChild(d); log.scrollTop=log.scrollHeight;
+  body.textContent='';
+  var t0=performance.now(), first=null;
+
   fetch('/api/infer',{
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({prompt:text, max_tokens:96})
-  }).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); })
-   .then(function(res){
-     var d=res.j;
-     if(!res.ok || d.error){ throw new Error(d.error||('HTTP error')); }
-     bot.textContent='';
-     var w=document.createElement('span'); w.className='who'; w.textContent='device';
-     bot.appendChild(w); bot.appendChild(document.createTextNode(d.reply));
-     status.textContent='region '+(d.region||'?')+' · '+d.tokens+' tokens · '
-       +d.tokens_per_sec+' tok/s · load '+Math.round((d.load_ms||0)/1000)+'s · '+((performance.now()-t0)/1000).toFixed(1)+'s total';
-   })
-   .catch(function(e){
-     bot.className='msg err';
-     bot.textContent='Could not run inference on the device: '+e.message;
-     status.textContent='error — see /docs/ for limits';
-   })
-   .finally(function(){ send.disabled=false; input.focus(); });
+    body: JSON.stringify({prompt:text, max_tokens:96, stream:true})
+  }).then(function(r){
+    if(!r.ok || !r.body) throw new Error('HTTP '+r.status);
+    var reader=r.body.getReader(), dec=new TextDecoder(), buf='';
+    function pump(){
+      return reader.read().then(function(res){
+        if(res.done){ caret.remove(); return; }
+        buf+=dec.decode(res.value,{stream:true});
+        var parts=buf.split('\n\n'); buf=parts.pop();
+        parts.forEach(function(chunk){
+          var ev='message', data='';
+          chunk.split('\n').forEach(function(line){
+            if(line.indexOf('event:')===0) ev=line.slice(6).trim();
+            else if(line.indexOf('data:')===0) data+=line.slice(5).trim();
+          });
+          if(!data) return;
+          var j; try{ j=JSON.parse(data); }catch(e){ return; }
+          if(ev==='token'){
+            if(first===null) first=performance.now();
+            body.textContent+=j.text;
+            log.scrollTop=log.scrollHeight;
+          } else if(ev==='start'){
+            status.textContent='streaming from '+(j.region||'vercel')+'…';
+          } else if(ev==='done'){
+            caret.remove();
+            var ttfb=first?((first-t0)/1000).toFixed(1):'?';
+            status.textContent='region '+(j.region||'?')+' · '+j.tokens+' tokens · '
+              +j.tokens_per_sec+' tok/s · load '+(j.load_s||0)+'s · first token '+ttfb+'s · '
+              +((performance.now()-t0)/1000).toFixed(1)+'s total';
+          } else if(ev==='error'){
+            throw new Error(j.error||'stream error');
+          }
+        });
+        return pump();
+      });
+    }
+    return pump();
+  }).catch(function(e){
+    caret.remove();
+    d.className='msg err';
+    body.textContent='Could not run inference on the device: '+e.message;
+    status.textContent='error — see /docs/ for limits';
+  }).finally(function(){ btnSend.disabled=false; input.focus(); });
+}
+
+form.addEventListener('submit',function(ev){
+  ev.preventDefault();
+  runChat(input.value);
 });
 </script>
 </body>

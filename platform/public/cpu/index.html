@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CPU clone — x86-64 device running on Vercel</title>
+<meta name="description" content="An independently implemented x86-64 CPU clone that executes real machine code on Vercel, including a neural network whose forward pass it decodes and executes itself." />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<nav class="nav"><div class="nav-inner">
+  <a class="logo" href="/"><span class="mark">vq</span> vqwen platform</a>
+  <a class="tab" href="/">Home</a>
+  <a class="tab" href="/chat/">Chat</a>
+  <a class="tab active" href="/cpu/">CPU clone</a>
+  <a class="tab" href="/docs/">Docs</a>
+  <span class="spacer"></span>
+  <span class="status"><span class="pulse"></span><span id="nav-status">connecting…</span></span>
+</div></nav>
+
+<main>
+  <div class="hero">
+    <div class="eyebrow">x86-64 · real machine code · no emulator</div>
+    <h1>A CPU clone that runs on Vercel</h1>
+    <p class="lede">
+      This is an independently implemented x86-64 engine. It decodes real machine-code
+      bytes and executes them against its own registers, flags and memory. The neural
+      network below runs on it: the forward pass is x86-64 machine code that the clone
+      decodes and executes instruction by instruction. No math library performs the
+      inference.
+    </p>
+    <div style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap">
+      <a class="btn" href="#ai">Run the AI on the clone</a>
+      <a class="btn ghost" href="#asm">Execute a program</a>
+    </div>
+  </div>
+
+  <section>
+    <h2>Capability</h2>
+    <div class="grid">
+      <div class="card"><div class="job">engine</div><div class="meta" id="c-engine">…</div></div>
+      <div class="card"><div class="job">target</div><div class="meta" id="c-target">…</div></div>
+      <div class="card"><div class="job">region</div><div class="meta" id="c-region">…</div></div>
+      <div class="card"><div class="job">verification</div><div class="meta" id="c-verif">…</div></div>
+    </div>
+    <div class="note" id="honest"></div>
+  </section>
+
+  <section id="ai">
+    <h2>Neural network running on the clone</h2>
+    <p class="lede" style="max-width:70ch">
+      The network is a small character model. Its weights are integers, and its whole
+      forward pass — every multiply and add — is x86-64 machine code. When you press
+      Generate, the clone decodes and executes that code, one instruction at a time,
+      and the returned instruction count is the number it actually executed.
+    </p>
+    <div class="panel">
+      <label for="prompt">prompt</label>
+      <input id="prompt" value="the " maxlength="24" />
+      <label for="nchars">characters</label>
+      <input id="nchars" type="number" value="60" min="1" max="200" />
+      <button class="btn" id="gen">Generate on the clone</button>
+    </div>
+    <div class="out" id="aiout">—</div>
+    <div class="metrics">
+      <div class="card"><div class="job">forward passes</div><div class="metric cyan" id="m-passes">–</div></div>
+      <div class="card"><div class="job">instructions executed</div><div class="metric" id="m-insns">–</div></div>
+      <div class="card"><div class="job">instructions / pass</div><div class="metric" id="m-ipp">–</div></div>
+      <div class="card"><div class="job">µs / pass</div><div class="metric" id="m-us">–</div></div>
+      <div class="card"><div class="job">math library used</div><div class="metric green" id="m-lib">–</div></div>
+      <div class="card"><div class="job">verified mismatches</div><div class="metric green" id="m-mism">–</div></div>
+    </div>
+  </section>
+
+  <section id="asm">
+    <h2>Execute a program on the clone</h2>
+    <p class="lede" style="max-width:70ch">
+      Enter AT&T-syntax x86-64 instructions, one per line. They are assembled to
+      machine code and executed by the clone. The result is read from rax, and the
+      flags shown are the ones the clone computed.
+    </p>
+    <div class="panel" style="flex-direction:column;align-items:stretch">
+      <label for="codehex">machine code (hex) — executed by the clone, byte by byte</label>
+      <textarea id="codehex" rows="3" spellcheck="false"></textarea>
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap" id="exwrap">
+        <button class="btn" id="runcpu">Run on the clone</button>
+      </div>
+      <div class="meta" id="progmeta">—</div>
+    </div>
+    <div class="out" id="cpuout">—</div>
+    <div class="metrics">
+      <div class="card"><div class="job">rax</div><div class="metric blue" id="p-rax">–</div></div>
+      <div class="card"><div class="job">instructions executed</div><div class="metric" id="p-insns">–</div></div>
+      <div class="card"><div class="job">elapsed</div><div class="metric" id="p-ms">–</div></div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="nav-inner">
+  Execution: Vercel serverless · Source: GitHub · Measurements are real, not estimated.<br>
+  <span id="footstamp"></span>
+</div></footer>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+function setText(id,v){var e=$(id); if(e) e.textContent=v;}
+
+fetch('/api/cpu',{cache:'no-store'}).then(function(r){return r.json()}).then(function(s){
+  var c=s.capabilities||{};
+  setText('nav-status','live · '+(s.region||'vercel'));
+  setText('c-engine',c.engine||'—');
+  setText('c-target',c.target||'—');
+  setText('c-region',s.region||'unknown');
+  setText('c-verif',c.verification||'—');
+  setText('honest',c.honest_limit||'');
+  var ai=s.ai||{};
+  setText('m-mism',(ai.verified_mismatches==null)?'–':ai.verified_mismatches);
+  setText('m-lib','no');
+  setText('m-ipp',(ai.instructions_per_pass==null)?'–':ai.instructions_per_pass.toLocaleString());
+}).catch(function(){ setText('nav-status','api unavailable'); });
+
+$('gen').addEventListener('click',function(){
+  var b=this; b.disabled=true; setText('aiout','running on the clone…');
+  fetch('/api/cpu',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({generate:$('prompt').value,n:parseInt($('nchars').value||'60',10)})})
+  .then(function(r){return r.json()}).then(function(s){
+    if(s.error){ setText('aiout','error: '+s.error); return; }
+    setText('aiout',s.text);
+    setText('m-passes',s.forward_passes);
+    setText('m-insns',(s.instructions_executed||0).toLocaleString());
+    setText('m-ipp',(s.instructions_per_pass||0).toLocaleString());
+    setText('m-us',s.us_per_pass);
+    setText('m-lib',s.math_library_used?'yes':'no');
+    setText('footstamp','generated at '+new Date().toISOString()+' on the clone');
+  }).catch(function(e){ setText('aiout','request failed: '+e); })
+  .then(function(){ b.disabled=false; });
+});
+
+var EXAMPLES={};
+fetch('/api/cpu',{cache:'no-store'}).then(function(r){return r.json()}).then(function(s){
+  EXAMPLES=(s.capabilities&&s.capabilities.examples)||{};
+  buildExampleButtons();
+}).catch(function(){});
+
+function buildExampleButtons(){
+  var wrap=$('exwrap');
+  Object.keys(EXAMPLES).forEach(function(name,i){
+    var b=document.createElement('button');
+    b.className=(i===0?'btn ghost':'btn ghost');
+    b.textContent=name.replace(/_/g,' ');
+    b.addEventListener('click',function(){ loadExample(name); });
+    wrap.appendChild(b);
+  });
+  var first=Object.keys(EXAMPLES)[0];
+  if(first) loadExample(first);
+}
+
+function loadExample(name){
+  var ex=EXAMPLES[name]; if(!ex) return;
+  $('codehex').value=ex.code_hex;
+  setText('progmeta',name+': '+ex.asm.join('; ')+'   ('+ex.bytes+' bytes)');
+}
+
+$('runcpu').addEventListener('click',function(){
+  var b=this; b.disabled=true; setText('cpuout','executing on the clone…');
+  var hex=$('codehex').value.replace(/\s+/g,'');
+  fetch('/api/cpu',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({code:hex,args:[]})})
+  .then(function(r){return r.json()}).then(function(s){
+    if(s.error){ setText('cpuout','error: '+s.error+(s.detail?('\n'+s.detail):'')); return; }
+    setText('cpuout','rax = '+s.result_hex+'  ('+s.result_rax+')\nflags: '+JSON.stringify(s.flags)+'\nmachine code: '+s.machine_code);
+    setText('p-rax',s.result_hex);
+    setText('p-insns',(s.instructions_executed||0).toLocaleString());
+    setText('p-ms',s.elapsed_ms+' ms');
+  }).catch(function(e){ setText('cpuout','request failed: '+e); })
+  .then(function(){ b.disabled=false; });
+});
+</script>
+</body>
+</html>

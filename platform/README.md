@@ -28,9 +28,27 @@ Base: `https://vqwen-platform.vercel.app`
 | `GET /api/device?job=memory` | Memory bandwidth |
 | `GET /api/device?job=storage` | Storage throughput |
 | `GET /api/device?job=network` | Network download rate |
+| `GET /api/cpu` | CPU-clone capability report and AI provenance |
+| `POST /api/cpu` `{"example":"sum_1_to_100"}` | Run a pre-assembled program on the x86-64 clone |
+| `POST /api/cpu` `{"code":"<hex>"}` | Run arbitrary machine code on the clone |
+| `POST /api/cpu` `{"generate":"the ","n":80}` | Run the neural network on the clone |
 
 Every number returned is produced by real work at request time. Nothing is
 estimated or hard-coded.
+
+### The CPU clone (`/cpu/`)
+
+An independently implemented x86-64 engine runs on Vercel. It decodes real
+machine code and executes it against its own registers, flags and memory.
+Correctness is verified against the physical CPU: 54 fixed and 14,500
+randomized cases, 0 mismatches.
+
+The neural network at `/api/cpu` runs on that clone. Its whole forward pass is
+x86-64 machine code that the clone decodes and executes instruction by
+instruction; no math library performs the inference. See
+`device/CPU_CLONE_REPORT.md` for the full, honest report — including the
+measured ~8,300x slowdown versus native execution, which is the unavoidable
+consequence of running a CPU in software.
 
 ## Add a new device or job (future tasks)
 

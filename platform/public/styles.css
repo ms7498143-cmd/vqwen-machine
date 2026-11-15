@@ -79,7 +79,7 @@ footer .nav-inner{padding:0 24px}
          padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
 .msg{max-width:82%;padding:12px 15px;border-radius:14px;font-size:14.5px;line-height:1.6;
      white-space:pre-wrap;word-wrap:break-word}
-.msg.bot{background:var(--panel2);border:1px solid var(--line);align-self:flex-start;
+.msg.bot{background:var(--panel2);border:1px solid var(--line);align-self:flex-start;white-space:pre-wrap;
          border-bottom-left-radius:5px}
 .msg.user{background:#16233f;border:1px solid #22345c;align-self:flex-end;border-bottom-right-radius:5px}
 .msg.err{border-color:#5a2626;background:#1c1010;color:#fca5a5}
@@ -90,3 +90,23 @@ footer .nav-inner{padding:0 24px}
                 padding:14px 16px;color:var(--fg);font:14.5px var(--sans);outline:none}
 .composer input:focus{border-color:var(--accent)}
 .typing{color:var(--dim);font:12px var(--mono)}
+
+/* Streaming caret: shown while tokens are arriving, removed on completion. */
+.caret{display:inline-block;width:0.5em;height:1em;margin-left:2px;vertical-align:-2px;
+  background:currentColor;opacity:.7;animation:blink 1s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+
+/* CPU clone page */
+.note{font:12px/1.7 var(--mono);color:var(--muted);margin-top:14px;padding:12px 14px;
+      border-left:2px solid var(--warn);background:var(--panel);border-radius:0 8px 8px 0}
+.panel{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin:18px 0 14px}
+.panel label{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;
+             color:var(--dim);display:block;margin-bottom:6px}
+.panel input,.panel textarea{background:var(--panel);border:1px solid var(--line);color:var(--fg);
+      border-radius:10px;padding:11px 13px;font:14px var(--mono);outline:none;min-width:120px}
+.panel textarea{width:100%;resize:vertical}
+.panel input:focus,.panel textarea:focus{border-color:var(--accent)}
+.out{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+     padding:18px;font:13px/1.7 var(--mono);color:var(--fg);white-space:pre-wrap;
+     min-height:56px;word-break:break-word}
+.metrics{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:18px}

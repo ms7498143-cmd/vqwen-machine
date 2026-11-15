@@ -72,6 +72,60 @@ class Model:
             "reply": self.tok.decode(out_tokens, skip_special_tokens=True).strip(),
         }
 
+    def stream(self, prompt, max_new=48):
+        """Yield tokens as they are produced.
+
+        Each item is ("token", text) for a decoded piece, then a final
+        ("done", stats) where stats carries the measured generation rate.
+        Decoding is incremental: only the new suffix is emitted, so the client
+        can append text without re-rendering.
+        """
+        text = f"<|im_start|>user\n{prompt}<|im_end|>\n<|im_start|>assistant\n"
+        ids = self.tok.encode(text).ids
+        cur_ids = np.array([ids], dtype=np.int64)
+        cur_att = np.ones((1, len(ids)), dtype=np.int64)
+        cur_pos = np.arange(len(ids), dtype=np.int64).reshape(1, -1)
+        past = self._empty_past()
+        past_len = 0
+        out_tokens = []
+        emitted = ""
+
+        t0 = time.perf_counter()
+        for _ in range(max_new):
+            feeds = {"input_ids": cur_ids, "attention_mask": cur_att, "position_ids": cur_pos}
+            feeds.update(past)
+            outs = self.sess.run(None, feeds)
+            by_name = dict(zip(self.out_names, outs))
+            next_id = int(np.argmax(by_name["logits"][0, -1, :]))
+            if next_id == self.tok.token_to_id("<|im_end|>"):
+                break
+            out_tokens.append(next_id)
+            full = self.tok.decode(out_tokens, skip_special_tokens=True)
+            if full.startswith(emitted):
+                piece = full[len(emitted):]
+            else:
+                piece = full
+            emitted = full
+            if piece:
+                yield ("token", piece)
+            for pi, po in zip(self.past_in, self.present_out):
+                past[pi] = by_name[po]
+            past_len += cur_ids.shape[1]
+            cur_ids = np.array([[next_id]], dtype=np.int64)
+            cur_att = np.ones((1, past_len + 1), dtype=np.int64)
+            cur_pos = np.array([[past_len]], dtype=np.int64)
+
+        gen_s = time.perf_counter() - t0
+        yield ("done", {
+            "job": "infer-stream",
+            "model": MODEL_REPO,
+            "quantization": "q4f16",
+            "load_s": round(self.load_s, 2),
+            "gen_s": round(gen_s, 3),
+            "tokens": len(out_tokens),
+            "tokens_per_sec": round(len(out_tokens) / gen_s, 2) if gen_s else 0,
+        })
+
 
 def main():
     ap = argparse.ArgumentParser()

@@ -1,0 +1,65 @@
+{
+  "host_cpu": "AMD EPYC 9B14",
+  "cores": 4,
+  "python": "3.13.15",
+  "median_slowdown": 8299.7,
+  "results": [
+    {
+      "name": "integer add",
+      "asm": "addq %rbx, %rax",
+      "native_ops_per_s": 2542506902.0,
+      "clone_ops_per_s": 315257.0,
+      "slowdown_factor": 8064.9
+    },
+    {
+      "name": "integer multiply",
+      "asm": "imulq %rbx, %rax",
+      "native_ops_per_s": 1134980765.0,
+      "clone_ops_per_s": 341405.0,
+      "slowdown_factor": 3324.4
+    },
+    {
+      "name": "shift left",
+      "asm": "mov $3, %cl; shlq %cl, %rax",
+      "native_ops_per_s": 2256831485.0,
+      "clone_ops_per_s": 231770.0,
+      "slowdown_factor": 9737.4
+    },
+    {
+      "name": "rotate",
+      "asm": "mov $7, %cl; rolq %cl, %rax",
+      "native_ops_per_s": 2276358582.0,
+      "clone_ops_per_s": 266725.0,
+      "slowdown_factor": 8534.5
+    },
+    {
+      "name": "compare + branch-free set",
+      "asm": "cmpq %rbx, %rax; setg %al; movzbl %al, %eax",
+      "native_ops_per_s": 1134485032.0,
+      "clone_ops_per_s": 116757.0,
+      "slowdown_factor": 9716.6
+    },
+    {
+      "name": "lea (address calc)",
+      "asm": "leaq 8(%rax,%rbx,4), %rax",
+      "native_ops_per_s": 1697595153.0,
+      "clone_ops_per_s": 416845.0,
+      "slowdown_factor": 4072.5
+    },
+    {
+      "name": "bitwise xor",
+      "asm": "xorq %rbx, %rax",
+      "native_ops_per_s": 2540114117.0,
+      "clone_ops_per_s": 336139.0,
+      "slowdown_factor": 7556.7
+    },
+    {
+      "name": "memory store/load",
+      "asm": "movq %rax, (%rsp); movq (%rsp), %rax",
+      "native_ops_per_s": 2260670960.0,
+      "clone_ops_per_s": 189452.0,
+      "slowdown_factor": 11932.7
+    }
+  ],
+  "note": "A software CPU clone executes on the host processor and is slower than it. This provides functional equivalence, not performance equivalence."
+}

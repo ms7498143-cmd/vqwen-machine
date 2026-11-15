@@ -60,13 +60,16 @@ class handler(BaseHTTPRequestHandler):
         q = parse_qs(urlparse(self.path).query)
         prompt = (q.get("prompt") or [None])[0]
         max_tokens = int((q.get("max_tokens") or ["64"])[0])
+        stream = (q.get("stream") or ["0"])[0] in ("1", "true", "yes")
         if not prompt:
             return self._json(200, {
                 "device": "infer-device-python",
                 "model": MODEL_REPO,
-                "usage": "GET or POST with prompt and max_tokens",
+                "usage": "GET or POST with prompt and max_tokens; add stream=1 for SSE",
                 "region": os.environ.get("VERCEL_REGION", "unknown"),
             })
+        if stream:
+            return self._stream(prompt, max_tokens)
         self._run(prompt, max_tokens)
 
     def do_POST(self):
@@ -80,7 +83,51 @@ class handler(BaseHTTPRequestHandler):
         max_tokens = int(body.get("max_tokens") or 64)
         if not prompt:
             return self._json(400, {"error": "prompt required"})
+        if body.get("stream"):
+            return self._stream(prompt, max_tokens)
         self._run(prompt, max_tokens)
+
+    def _sse(self, event, data):
+        """Write one Server-Sent Event and flush it to the socket immediately."""
+        payload = f"event: {event}\ndata: {json.dumps(data)}\n\n".encode()
+        self.wfile.write(payload)
+        self.wfile.flush()
+
+    def _stream(self, prompt, max_tokens):
+        """Stream tokens as they are produced, using Server-Sent Events.
+
+        No Content-Length is sent, so the response is chunked and each token
+        reaches the browser as soon as the model emits it.
+        """
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Connection", "close")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("X-Accel-Buffering", "no")
+        self.end_headers()
+        try:
+            t0 = time.time()
+            self._sse("start", {
+                "device": "infer-device-python",
+                "model": MODEL_REPO,
+                "region": os.environ.get("VERCEL_REGION", "unknown"),
+            })
+            m = get_model()
+            for kind, val in m.stream(prompt, min(max(max_tokens, 1), 256)):
+                if kind == "token":
+                    self._sse("token", {"text": val})
+                else:
+                    val["device"] = "infer-device-python"
+                    val["runtime"] = "Vercel Python function"
+                    val["region"] = os.environ.get("VERCEL_REGION", "unknown")
+                    val["wall_ms"] = int((time.time() - t0) * 1000)
+                    self._sse("done", val)
+        except Exception as e:
+            try:
+                self._sse("error", {"error": str(e)[:500]})
+            except Exception:
+                pass
 
     def _run(self, prompt, max_tokens):
         try:

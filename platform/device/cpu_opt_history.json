@@ -1,0 +1,38 @@
+[
+  {
+    "workload_iterations": 20000,
+    "repetitions": 5,
+    "interpreter_s": 1.5457,
+    "jit_s": 1.6222,
+    "speedup": 0.95,
+    "correct": true,
+    "kept": false
+  },
+  {
+    "workload_iterations": 20000,
+    "repetitions": 5,
+    "interpreter_s": 1.5639,
+    "jit_s": 0.0005,
+    "speedup": 3468.33,
+    "correct": false,
+    "kept": false
+  },
+  {
+    "workload_iterations": 20000,
+    "repetitions": 5,
+    "interpreter_s": 1.5915,
+    "jit_s": 1.8969,
+    "speedup": 0.84,
+    "correct": true,
+    "kept": false
+  },
+  {
+    "workload_iterations": 20000,
+    "repetitions": 5,
+    "interpreter_s": 1.5928,
+    "jit_s": 0.3275,
+    "speedup": 4.86,
+    "correct": true,
+    "kept": true
+  }
+]
