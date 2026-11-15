@@ -1,0 +1,7 @@
+{
+  "base": "https://work-1-mholdkfnbasaflsh.prod-runtime.all-hands.dev",
+  "model": "Qwen2.5-0.5B-Instruct",
+  "runtime": "llama.cpp static",
+  "updated": "2026-11-15T10:20:00Z",
+  "note": "live llama-server endpoint; chat posts to {base}/v1/chat/completions"
+}

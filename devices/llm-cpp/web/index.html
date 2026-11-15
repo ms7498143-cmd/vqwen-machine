@@ -48,6 +48,20 @@
          color:var(--muted);font:12px/1.7 var(--mono)}
   code{font-family:var(--mono);background:#0d1117;border:1px solid var(--line);
        padding:1px 6px;border-radius:6px;font-size:12px}
+  .chatlog{max-height:360px;overflow:auto;display:flex;flex-direction:column;gap:10px;
+           padding:4px 2px 12px}
+  .msg{max-width:78%;padding:10px 13px;border-radius:12px;font-size:14px;line-height:1.5;
+       white-space:pre-wrap;word-wrap:break-word}
+  .msg.bot{background:#0d1117;border:1px solid var(--line);align-self:flex-start}
+  .msg.user{background:#122a1c;border:1px solid #1f3b2a;align-self:flex-end}
+  .msg.err{border-color:#4a2020;color:#fca5a5;background:#1a0d0d}
+  .chatrow{display:flex;gap:10px;border-top:1px solid var(--line);padding-top:14px}
+  .chatrow input{flex:1;background:#0d1117;border:1px solid var(--line);border-radius:10px;
+                 padding:11px 13px;color:var(--fg);font-size:14px;outline:none}
+  .chatrow input:focus{border-color:var(--accent2)}
+  .chatrow button{background:var(--accent2);color:#04121c;border:0;border-radius:10px;
+                  padding:11px 18px;font-weight:650;cursor:pointer;font-size:14px}
+  .chatrow button:disabled{opacity:.5;cursor:default}
   pre{background:#0d1117;border:1px solid var(--line);border-radius:12px;padding:14px;
       overflow:auto;font:12px/1.6 var(--mono)}
 </style>
@@ -65,6 +79,20 @@
     allocation. Every figure below is a real measurement taken from an executed run —
     nothing is estimated or displayed without a corresponding job.
   </p>
+
+  <section>
+    <h2>Chat — live inference on the device</h2>
+    <div class="card">
+      <div class="chatlog" id="chatlog" aria-live="polite">
+        <div class="msg bot">Connected to llm-cpp. Ask anything — this reply comes from the live model on the device.</div>
+      </div>
+      <form id="chat-form" class="chatrow" autocomplete="off">
+        <input id="chat-input" type="text" placeholder="Type a message…" />
+        <button id="chat-send" type="submit">Send</button>
+      </form>
+      <div class="meta" id="chat-status">endpoint: checking…</div>
+    </div>
+  </section>
 
   <section>
     <h2>Capabilities — measured</h2>
@@ -159,6 +187,70 @@ fetch('device.json', {cache:'no-store'}).then(r=>r.json()).then(d=>{
   set('stamp', 'measured ' + d.measured_at);
   set('footstamp', 'last measurement: ' + d.measured_at);
 }).catch(e=>{ document.getElementById('stamp').textContent='device.json unavailable'; });
+
+/* ---- live chat: real inference against the device endpoint ---- */
+(function(){
+  var log = document.getElementById('chatlog');
+  var form = document.getElementById('chat-form');
+  var input = document.getElementById('chat-input');
+  var send = document.getElementById('chat-send');
+  var status = document.getElementById('chat-status');
+  var BASE = null;
+
+  function add(text, cls){
+    var d = document.createElement('div');
+    d.className = 'msg ' + cls;
+    d.textContent = text;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+    return d;
+  }
+
+  fetch('endpoint.json', {cache:'no-store'}).then(function(r){ return r.json(); })
+    .then(function(e){
+      BASE = (e.base || '').replace(/\/$/,'');
+      status.textContent = 'endpoint: ' + BASE + '  ·  model: ' + (e.model || '?');
+      fetch(BASE + '/health').then(function(h){
+        status.textContent += h.ok ? '  ·  online' : '  ·  unreachable';
+      }).catch(function(){ status.textContent += '  ·  offline'; });
+    })
+    .catch(function(){ status.textContent = 'endpoint: endpoint.json unavailable'; });
+
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var text = input.value.trim();
+    if(!text || !BASE) return;
+    add(text, 'user');
+    input.value = '';
+    send.disabled = true;
+    var bot = add('…', 'bot');
+    var t0 = performance.now();
+
+    fetch(BASE + '/v1/chat/completions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        messages:[{role:'user', content:text}],
+        max_tokens:256, temperature:0.7, stream:false
+      })
+    }).then(function(r){
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function(d){
+      var reply = d.choices[0].message.content.trim();
+      var t = d.timings || {};
+      var secs = ((performance.now() - t0)/1000).toFixed(2);
+      bot.textContent = reply;
+      status.textContent = 'endpoint: ' + BASE
+        + '  ·  decode ' + (t.predicted_per_second ? t.predicted_per_second.toFixed(1) : '?') + ' tok/s'
+        + '  ·  ' + secs + 's round-trip';
+    }).catch(function(err){
+      bot.className = 'msg err';
+      bot.textContent = 'Could not reach the device: ' + err.message;
+      status.textContent = 'endpoint: ' + BASE + '  ·  error';
+    }).finally(function(){ send.disabled = false; input.focus(); });
+  });
+})();
 </script>
 </body>
 </html>
