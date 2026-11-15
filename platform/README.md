@@ -41,15 +41,37 @@ estimated or hard-coded.
 The function runs on Vercel's servers with 1024 MB and up to 60s. That is the
 budget to design within.
 
-## Adding continuous / scheduled work
+## Deploying without this workspace
 
-GitHub Actions runs on GitHub's servers — use it for anything scheduled or
-long-running that does not need to answer an HTTP request:
+Two ways, neither requires a development workspace:
+
+**1. Automatic (one-time browser setup, then forever hands-off).**
+Vercel's Git integration must be connected to the GitHub account that owns the
+repo. This needs a browser OAuth step once:
+   - https://vercel.com/account/integrations -> connect GitHub -> authorize
+     the account `ms7498143-cmd`.
+   - Then link the project: Vercel dashboard -> `vqwen-platform` -> Settings ->
+     Git -> connect `ms7498143-cmd/vqwen-machine`, production branch `main`.
+After that, every push to `main` deploys automatically with no token and no
+workspace. This is the intended permanent path.
+
+**2. Manual, from any machine.**
+```bash
+git clone https://github.com/ms7498143-cmd/vqwen-machine
+cd vqwen-machine/platform
+VERCEL_TOKEN=... ./deploy.sh
+```
+`deploy.sh` needs only `VERCEL_TOKEN`; it links and deploys production.
+
+## Continuous / scheduled work
+
+GitHub Actions runs on GitHub's servers. To use it, the push token needs the
+`workflow` scope (the current token does not have it, which blocks adding
+workflow files). Once added:
 
 - Add `.github/workflows/<name>.yml` with a `schedule:` or `workflow_dispatch:` trigger.
-- Requires the push token to carry the `workflow` scope.
 
-Vercel Cron (`vercel.json` → `crons`) is the alternative when the work is a
+Vercel Cron (`vercel.json` -> `crons`) is the alternative when the work is a
 Vercel function to be called on a schedule.
 
 ## Layout
