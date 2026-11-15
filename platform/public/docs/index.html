@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Docs — vqwen platform</title>
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<nav class="nav"><div class="nav-inner">
+  <a class="logo" href="/"><span class="mark">vq</span> vqwen platform</a>
+  <a class="tab" href="/">Home</a>
+  <a class="tab" href="/chat/">Chat</a>
+  <a class="tab active" href="/docs/">Docs</a>
+  <span class="spacer"></span>
+  <span class="status"><span class="pulse"></span><span id="nav-status">connecting…</span></span>
+</div></nav>
+
+<main>
+  <div class="hero">
+    <div class="eyebrow">reference</div>
+    <h1>Docs</h1>
+    <p class="lede">Everything the platform exposes, and the honest limits of each part.</p>
+  </div>
+
+  <section>
+    <h2>Architecture</h2>
+    <table>
+      <tr><td class="k">source of truth</td><td>GitHub — <code>ms7498143-cmd/vqwen-machine</code></td></tr>
+      <tr><td class="k">runtime</td><td>Vercel serverless functions</td></tr>
+      <tr><td class="k">static pages</td><td>Vercel CDN</td></tr>
+      <tr><td class="k">workspace dependency</td><td><span class="pill ok">none</span></td></tr>
+    </table>
+    <p class="meta">Reset or close the development workspace and everything above keeps running.</p>
+  </section>
+
+  <section>
+    <h2>Endpoints</h2>
+    <table>
+      <thead><tr><th>Endpoint</th><th>Method</th><th>Returns</th></tr></thead>
+      <tbody>
+        <tr><td><code>/api/status</code></td><td>GET</td><td>What runs where, region, registered models</td></tr>
+        <tr><td><code>/api/device?job=all</code></td><td>GET</td><td>Real CPU, memory, storage, network measurements</td></tr>
+        <tr><td><code>/api/device?job=compute</code></td><td>GET</td><td>One job only</td></tr>
+        <tr><td><code>/api/fleet?devices=8</code></td><td>GET</td><td>Parallel device jobs and aggregate throughput</td></tr>
+        <tr><td><code>/api/infer?prompt=hi</code></td><td>GET/POST</td><td>Model generation with measured tok/s</td></tr>
+        <tr><td><code>/models.json</code></td><td>GET</td><td>Model registry</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Examples</h2>
+    <pre>curl https://vqwen-platform.vercel.app/api/status
+
+curl "https://vqwen-platform.vercel.app/api/device?job=all"
+
+curl "https://vqwen-platform.vercel.app/api/fleet?devices=8"
+
+curl "https://vqwen-platform.vercel.app/api/infer?prompt=What%20is%20a%20CPU"
+
+curl -X POST https://vqwen-platform.vercel.app/api/infer \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Explain KV caching.","max_tokens":128}'</pre>
+  </section>
+
+  <section>
+    <h2>Adding a device (future tasks)</h2>
+    <pre>platform/
+  api/&lt;name&gt;.js     handler (req, res) -&gt; runs on Vercel
+  lib/measure.js    real CPU / memory / storage / network primitives
+  lib/infer.js      real model inference (transformers.js, ONNX)
+  device/           python device program + model registry
+  models.json       registered models
+  public/           home, chat, docs</pre>
+    <p class="meta">Add a file under <code>api/</code>, push to <code>main</code>, and it is live.</p>
+  </section>
+
+  <section>
+    <h2>Honest limits</h2>
+    <table>
+      <tr><td class="k">ephemeral functions</td><td>Storage written inside a function does not persist between requests. Use a database or object store for durable data.</td></tr>
+      <tr><td class="k">memory cap</td><td>Hobby plan caps a function at 2048 MB; configured here at 3009 MB target with graceful fallback.</td></tr>
+      <tr><td class="k">no GPU</td><td>Vercel provides CPU only. Large models do not fit; small quantized models do.</td></tr>
+      <tr><td class="k">cold start</td><td>The model is fetched on first use, so the first request is slower. Later requests reuse the in-memory pipeline.</td></tr>
+      <tr><td class="k">throughput</td><td>A single device is bounded by one function core. Aggregate throughput scales by running many devices in parallel — a real sum of real measurements, not a projection.</td></tr>
+      <tr><td class="k">not new silicon</td><td>These are shared cloud CPUs, not hardware you own. The platform is real infrastructure, but it is rented.</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Redeploy from anywhere</h2>
+    <pre>git clone https://github.com/ms7498143-cmd/vqwen-machine
+cd vqwen-machine/platform
+VERCEL_TOKEN=... ./deploy.sh</pre>
+    <p class="meta">Only <code>VERCEL_TOKEN</code> is required. No workspace, no local paths.</p>
+  </section>
+</main>
+
+<footer><div class="nav-inner">
+  Execution: Vercel serverless · Source: GitHub · Measurements are real, not estimated.
+</div></footer>
+
+<script>
+fetch('/api/status',{cache:'no-store'}).then(function(r){return r.json()}).then(function(s){
+  var el=document.getElementById('nav-status'); if(el) el.textContent='live · '+(s.region||'vercel');
+}).catch(function(){});
+</script>
+</body>
+</html>

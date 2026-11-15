@@ -1,0 +1,30 @@
+{
+  "models": [
+    {
+      "id": "qwen2.5-0.5b-instruct",
+      "source": "onnx-community/Qwen2.5-0.5B-Instruct",
+      "family": "Qwen2.5",
+      "params": "0.5B",
+      "quantization": "q4f16",
+      "file_mb": 461,
+      "context": 32768,
+      "license": "apache-2.0",
+      "runtimes": [
+        {
+          "runtime": "python-onnxruntime",
+          "device": "python-device",
+          "measured_tokens_per_sec": 21.46,
+          "measured_load_s": 2.81,
+          "note": "Autoregressive loop with KV cache, INT4 weights, measured on the device."
+        },
+        {
+          "runtime": "transformers.js (node)",
+          "device": "vercel-infer-device",
+          "measured_tokens_per_sec": 4.38,
+          "measured_load_s": 8.6,
+          "note": "Same model inside a Vercel function; slower CPU per core."
+        }
+      ]
+    }
+  ]
+}

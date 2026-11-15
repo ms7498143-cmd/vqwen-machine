@@ -1,0 +1,9 @@
+{
+  "name": "vqwen-platform",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Devices and jobs that run on Vercel, sourced from GitHub. No workspace dependency.",
+  "dependencies": {
+    "@huggingface/transformers": "^3.0.2"
+  }
+}
